@@ -16,7 +16,7 @@ const TodoList = () => {
 	};
 
 	const remover = index => {
-		let newList = list.splice(index, 1);
+		let newList = list.filter(word => word != list[index]);
 		setList(newList);
 	};
 

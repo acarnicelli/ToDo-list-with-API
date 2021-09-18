@@ -8,6 +8,7 @@ body {
 p {
     font-size: 120px;
     font-weight: 200;
+    margin-top: 50px;
 }
 
 .wrapper {
@@ -36,6 +37,11 @@ li:hover {
     justify-content: space-between;
 }
 
+.cruz {
+    color: gray;
+}
+
 .cruz:hover {
     cursor: pointer;
+    color: rgb(236, 93, 117);
 }
