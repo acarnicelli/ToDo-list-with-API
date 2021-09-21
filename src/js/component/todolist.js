@@ -9,6 +9,19 @@ const TodoList = () => {
 	//Para que aparezca la cruz de "cerrar" al hacer hover en el <li>
 	const [indexHover, setIndexHover] = useState();
 
+	//Llamado a la API
+	const leerTareas = () => {
+		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
+			method: "GET"
+		})
+			.then(response => response.json())
+			.then(data => setList(data));
+	};
+
+	leerTareas();
+
+	// ******************* tengo el get y sale en la consola pero tengo que juntarlo con lo otro ********************
+
 	const agregar = () => {
 		setList([...list, task]);
 		setTask("");
@@ -44,7 +57,7 @@ const TodoList = () => {
 							onMouseOver={() => setIndexHover(index)}
 							onMouseLeave={() => setIndexHover(-1)}>
 							<div className="cruzContainer">
-								{item}
+								{item.label}
 								{indexHover == index ? (
 									<div className="cruz">
 										<i
