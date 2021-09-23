@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const TodoList = () => {
 	//estados
-	const [task, setTask] = useState();
-
+	const [task, setTask] = useState({});
 	const [list, setList] = useState([]);
 
 	//Para que aparezca la cruz de "cerrar" al hacer hover en el <li>
@@ -18,52 +17,88 @@ const TodoList = () => {
 			.then(data => setList(data));
 	};
 
-	leerTareas();
+	useEffect(() => {
+		leerTareas();
+	}, []);
 
-	// ******************* tengo el get y sale en la consola pero tengo que juntarlo con lo otro ********************
 	const agregar = () => {
-		// setList([...list, { label: task, done: false }]);
+		// Si uso setList de una, no le da tiempo a setear la list y cuando la llamo el fetch manda la vieja, de esta forma, renderiza la
+		// list nueva y a la vez actualiza el estado en paralelo de modo que cuando termina está actualizado, no es necesario leer devuelta
+		// la API, ya que renderizo con variable local, sabiendo que se esta actualizando la API para la proxima vez que haga el GET.
+		let newList = [...list, task];
+		setList(newList);
 
 		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
 			method: "PUT",
-			body: JSON.stringify([...list, { label: task, done: false }]),
+			body: JSON.stringify(newList),
 			headers: {
 				"Content-Type": "application/json"
 			}
 		})
 			.then(resp => {
-				console.log(resp.ok); // will be true if the response is successfull
-				console.log(resp.status); // the status code = 200 or code = 400 etc.
-				console.log(resp.text()); // will try return the exact result as string
-				return resp.json(); // (returns promise) will try to parse the result as json as return a promise that you can .then for results
+				return resp; // (returns promise) will try to parse the result as json as return a promise that you can .then for results
 			})
-			.then(data => {
-				//here is were your code should start after the fetch finishes
-				// setList([...list, { label: task, done: false }]);
-
-				console.log(`This is data: ${data}`); //this will print on the console the exact object received from the server
-			})
+			.then(data => data)
 			.catch(error => {
 				//error handling
 				console.log(error);
 			});
-		setTask("");
+		setTask({ label: "" });
 	};
 
-	// const agregar = () => {
-	// 	setList([...list, task]);
-	// 	setTask("");
-	// };
-
 	// const remover = index => {
-	// 	let newList = list.filter(word => word.label != list[index]);
+	// 	let newList = list.filter(word => word.label != list[index].label);
 	// 	setList(newList);
 	// };
+
+	const remover = index => {
+		let newList = list.filter(word => word.label != list[index].label);
+		setList(newList);
+
+		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
+			method: "PUT",
+			body: JSON.stringify(newList),
+			headers: {
+				"Content-Type": "application/json"
+			}
+		})
+			.then(resp => {
+				return resp;
+			})
+			.then(data => data)
+			.catch(error => {
+				console.log(error);
+			});
+	};
 
 	const submitTask = e => {
 		if (e.key == "Enter") {
 			agregar();
 		}
+	};
+
+	// ******** NO FUNCIONA CLEAR LIST *******
+	const clearList = () => {
+		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
+			method: "DELETE",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		})
+			.then(response => response.json())
+			.then(data => data);
+
+		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
+			method: "POST",
+			body: [],
+			headers: {
+				"Content-Type": "application/json"
+			}
+		})
+			.then(response => response.json())
+			.then(data => setList(data));
+
+		leerTareas();
 	};
 
 	return (
@@ -72,11 +107,11 @@ const TodoList = () => {
 				<input
 					className="list-group-item py-2 px-5"
 					onChange={e => {
-						setTask(e.target.value);
+						setTask({ label: e.target.value, done: false });
 					}}
 					type="text"
 					placeholder="What needs to be done?"
-					value={task}
+					value={task.label}
 					onKeyDown={submitTask}
 				/>
 				{list.map((item, index) => {
@@ -90,9 +125,9 @@ const TodoList = () => {
 								{item.label}
 								{indexHover == index ? (
 									<div className="cruz">
-										{/* <i
+										<i
 											className="fas fa-times"
-											onClick={() => remover(index)}></i> */}
+											onClick={() => remover(index)}></i>
 									</div>
 								) : (
 									""
@@ -102,6 +137,15 @@ const TodoList = () => {
 					);
 				})}
 			</ul>
+
+			<div className="cruzContainer">
+				<button
+					type="button"
+					className="btn clearBtn"
+					onClick={clearList}>
+					Clear list
+				</button>
+			</div>
 		</div>
 	);
 };

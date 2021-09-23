@@ -18,7 +18,7 @@ p {
     align-items: center;
 }
 
-.contInput {
+.contInputAndBtn {
     display: flex;
 }
 
@@ -44,4 +44,19 @@ li:hover {
 .cruz:hover {
     cursor: pointer;
     color: rgb(236, 93, 117);
+}
+
+.clearBtn {
+    margin: auto;
+    margin-top: 25px;
+    background-color: gray;
+    color: whitesmoke;
+    font-weight: 600;
+    width: 600px;
+}
+
+.clearBtn:hover {
+    background-color: rgb(236, 93, 117);
+    color: whitesmoke;
+    font-weight: 600;
 }
