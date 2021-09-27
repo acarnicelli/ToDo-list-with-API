@@ -23,7 +23,7 @@ const TodoList = () => {
 
 	const agregar = () => {
 		// Si uso setList de una, no le da tiempo a setear la list y cuando la llamo el fetch manda la vieja, de esta forma, renderiza la
-		// list nueva y a la vez actualiza el estado en paralelo de modo que cuando termina está actualizado, no es necesario leer devuelta
+		// list nueva y a la vez actualiza el estado en paralelo de modo que cuando termina, está actualizado. No es necesario leer devuelta
 		// la API, ya que renderizo con variable local, sabiendo que se esta actualizando la API para la proxima vez que haga el GET.
 		let newList = [...list, task];
 		setList(newList);
@@ -52,7 +52,10 @@ const TodoList = () => {
 	// };
 
 	const remover = index => {
-		let newList = list.filter(word => word.label != list[index].label);
+		// Esta funciona, solo cuando n>1 por como esta hecha la API
+		// let newList = list.filter(elemento => elemento.label != list[index].label);
+		list[index].done = true;
+		let newList = list;
 		setList(newList);
 
 		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
@@ -78,6 +81,7 @@ const TodoList = () => {
 	};
 
 	// ******** NO FUNCIONA CLEAR LIST *******
+	// Podría hacerlo poniendo todos los "done" en true, pero eso no limpiaría la API.
 	const clearList = () => {
 		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
 			method: "DELETE",
@@ -86,19 +90,20 @@ const TodoList = () => {
 			}
 		})
 			.then(response => response.json())
-			.then(data => data);
-
-		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
-			method: "POST",
-			body: [],
-			headers: {
-				"Content-Type": "application/json"
-			}
-		})
-			.then(response => response.json())
-			.then(data => setList(data));
-
-		leerTareas();
+			.then(() => {
+				fetch(
+					"https://assets.breatheco.de/apis/fake/todos/user/alexander",
+					{
+						method: "POST",
+						body: [],
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}
+				)
+					.then(response => response)
+					.then(() => leerTareas());
+			});
 	};
 
 	return (
@@ -115,26 +120,30 @@ const TodoList = () => {
 					onKeyDown={submitTask}
 				/>
 				{list.map((item, index) => {
-					return (
-						<li
-							className="list-group-item py-2 px-5"
-							key={index}
-							onMouseOver={() => setIndexHover(index)}
-							onMouseLeave={() => setIndexHover(-1)}>
-							<div className="cruzContainer">
-								{item.label}
-								{indexHover == index ? (
-									<div className="cruz">
-										<i
-											className="fas fa-times"
-											onClick={() => remover(index)}></i>
-									</div>
-								) : (
-									""
-								)}
-							</div>
-						</li>
-					);
+					if (item.done == false) {
+						return (
+							<li
+								className="list-group-item py-2 px-5"
+								key={index}
+								onMouseOver={() => setIndexHover(index)}
+								onMouseLeave={() => setIndexHover(-1)}>
+								<div className="cruzContainer">
+									{item.label}
+									{indexHover == index ? (
+										<div className="cruz">
+											<i
+												className="fas fa-times"
+												onClick={() =>
+													remover(index)
+												}></i>
+										</div>
+									) : (
+										""
+									)}
+								</div>
+							</li>
+						);
+					}
 				})}
 			</ul>
 
