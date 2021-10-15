@@ -52,10 +52,19 @@ const TodoList = () => {
 	// };
 
 	const remover = index => {
-		// Esta funciona, solo cuando n>1 por como esta hecha la API
+		// Esta funciona, solo cuando n>1 por como esta hecha la API:
 		// let newList = list.filter(elemento => elemento.label != list[index].label);
-		list[index].done = true;
-		let newList = list;
+		let newList;
+
+		if (index != 0) {
+			newList = list.filter(
+				elemento => elemento.label != list[index].label
+			);
+		} else {
+			list[index].done = true;
+			newList = list;
+		}
+
 		setList(newList);
 
 		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
@@ -80,29 +89,23 @@ const TodoList = () => {
 		}
 	};
 
-	// ******** NO FUNCIONA CLEAR LIST *******
 	// Podría hacerlo poniendo todos los "done" en true, pero eso no limpiaría la API.
 	const clearList = () => {
+		let newList = [];
+		setList(newList);
 		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexander", {
-			method: "DELETE",
+			method: "PUT",
+			body: JSON.stringify([{ label: "Invisible", done: true }]),
 			headers: {
 				"Content-Type": "application/json"
 			}
 		})
-			.then(response => response.json())
-			.then(() => {
-				fetch(
-					"https://assets.breatheco.de/apis/fake/todos/user/alexander",
-					{
-						method: "POST",
-						body: [],
-						headers: {
-							"Content-Type": "application/json"
-						}
-					}
-				)
-					.then(response => response)
-					.then(() => leerTareas());
+			.then(resp => {
+				return resp;
+			})
+			.then(console.log(list))
+			.catch(error => {
+				console.log(error);
 			});
 	};
 
